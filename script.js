@@ -92,3 +92,156 @@ if (menuButton && nav) {
     });
   });
 }
+/* =========================================================
+   INTERACTIVE CODE FIELD
+   Code fragments repel from the cursor and reconstruct.
+   ========================================================= */
+
+const computationalPortrait = document.querySelector(".hero-visual");
+const codeParticles = document.querySelectorAll(".code-particle");
+
+if (computationalPortrait && codeParticles.length) {
+
+  let targetMouseX = 0;
+  let targetMouseY = 0;
+  let currentMouseX = 0;
+  let currentMouseY = 0;
+
+  let portraitRect = computationalPortrait.getBoundingClientRect();
+
+  const updatePortraitRect = () => {
+    portraitRect = computationalPortrait.getBoundingClientRect();
+  };
+
+  window.addEventListener("resize", updatePortraitRect);
+
+  computationalPortrait.addEventListener("pointermove", (event) => {
+
+    portraitRect = computationalPortrait.getBoundingClientRect();
+
+    targetMouseX = event.clientX - portraitRect.left;
+    targetMouseY = event.clientY - portraitRect.top;
+
+  });
+
+  computationalPortrait.addEventListener("pointerleave", () => {
+
+    targetMouseX = portraitRect.width / 2;
+    targetMouseY = portraitRect.height / 2;
+
+  });
+
+
+  function animateCodeField() {
+
+    currentMouseX += (targetMouseX - currentMouseX) * 0.08;
+    currentMouseY += (targetMouseY - currentMouseY) * 0.08;
+
+    const centerX = portraitRect.width / 2;
+    const centerY = portraitRect.height / 2;
+
+    codeParticles.forEach((particle) => {
+
+      const baseX = parseFloat(
+        getComputedStyle(particle)
+          .getPropertyValue("--base-x")
+      ) || 0;
+
+      const baseY = parseFloat(
+        getComputedStyle(particle)
+          .getPropertyValue("--base-y")
+      ) || 0;
+
+
+      /*
+       * Where the code particle currently lives
+       */
+      const particleX = centerX + baseX;
+      const particleY = centerY + baseY;
+
+
+      /*
+       * Distance between cursor and particle
+       */
+      const dx = particleX - currentMouseX;
+      const dy = particleY - currentMouseY;
+
+      const distance = Math.sqrt(dx * dx + dy * dy);
+
+      /*
+       * Interaction radius
+       */
+      const radius = 155;
+
+
+      if (distance < radius) {
+
+        /*
+         * Stronger displacement when cursor
+         * gets closer.
+         */
+        const strength =
+          Math.pow((radius - distance) / radius, 2);
+
+        const directionX =
+          distance === 0 ? 1 : dx / distance;
+
+        const directionY =
+          distance === 0 ? 1 : dy / distance;
+
+
+        const pushDistance = 75 * strength;
+
+        const pushX = directionX * pushDistance;
+        const pushY = directionY * pushDistance;
+
+
+        particle.style.setProperty(
+          "--push-x",
+          `${pushX}px`
+        );
+
+        particle.style.setProperty(
+          "--push-y",
+          `${pushY}px`
+        );
+
+      } else {
+
+        /*
+         * Smoothly reconstruct the original formation.
+         */
+        particle.style.setProperty(
+          "--push-x",
+          `${parseFloat(
+            particle.style.getPropertyValue("--push-x")
+          ) * 0.88 || 0}px`
+        );
+
+        particle.style.setProperty(
+          "--push-y",
+          `${parseFloat(
+            particle.style.getPropertyValue("--push-y")
+          ) * 0.88 || 0}px`
+        );
+
+      }
+
+    });
+
+    requestAnimationFrame(animateCodeField);
+  }
+
+
+  /*
+   * Start from the center.
+   */
+  currentMouseX = portraitRect.width / 2;
+  currentMouseY = portraitRect.height / 2;
+
+  targetMouseX = currentMouseX;
+  targetMouseY = currentMouseY;
+
+  animateCodeField();
+
+}
