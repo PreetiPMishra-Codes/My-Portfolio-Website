@@ -1,4 +1,4 @@
-#  Preeti Pragyan Mishra — Portfolio
+#  Preeti Pragyan Mishra: Portfolio
 
 > **Understanding intelligence. Building what comes next.**
 
